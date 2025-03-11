@@ -1,12 +1,12 @@
 # Open Deep Research MCP Server
 
-An AI-powered research assistant that performs deep, iterative research on any topic. It combines search engines, web scraping, and AI to explore topics in depth and generate comprehensive reports. Available as a Model Context Protocol (MCP) tool or standalone CLI. Look at exampleout.md to see what a report might look like.
+Found this on twitter and rigged it to search recent events. My use case was for recent events so I optimized it for that. I would loosely compare it Grok's deepsearch but more expensive and slower. Still a work in progress, trying to get the cost down, and improve report generating. 
 
 ## Quick Start
 
 1. Clone and install:
 ```bash
-git clone https://github.com/Ozamatash/deep-research
+git clone https://github.com/christiangraham702/deep-research
 cd deep-research
 npm install
 ```
