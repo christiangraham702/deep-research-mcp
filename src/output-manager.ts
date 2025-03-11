@@ -1,59 +1,56 @@
 import { ResearchProgress } from './deep-research.js';
 
 export class OutputManager {
-  private progressLines: number = 4;
-  private progressArea: string[] = [];
   private initialized: boolean = false;
 
   constructor() {
-    // Initialize terminal using stderr
-    process.stderr.write('\n'.repeat(this.progressLines));
     this.initialized = true;
   }
 
   log(...args: any[]) {
-    // Move cursor up to progress area
-    if (this.initialized) {
-      process.stderr.write(`\x1B[${this.progressLines}A`);
-      // Clear progress area
-      process.stderr.write('\x1B[0J');
-    }
     // Print log message to stderr
     console.error(...args);
-    // Redraw progress area if initialized
-    if (this.initialized) {
-      this.drawProgress();
-    }
   }
 
   updateProgress(progress: ResearchProgress) {
-    this.progressArea = [
-      `Depth:    [${this.getProgressBar(progress.totalDepth - progress.currentDepth, progress.totalDepth)}] ${Math.round(((progress.totalDepth - progress.currentDepth) / progress.totalDepth) * 100)}%`,
-      `Breadth:  [${this.getProgressBar(progress.totalBreadth - progress.currentBreadth, progress.totalBreadth)}] ${Math.round(((progress.totalBreadth - progress.currentBreadth) / progress.totalBreadth) * 100)}%`,
-      `Queries:  [${this.getProgressBar(progress.completedQueries, progress.totalQueries)}] ${Math.round((progress.completedQueries / progress.totalQueries) * 100)}%`,
-      progress.currentQuery ? `Current:  ${progress.currentQuery}` : '',
-    ];
-    this.drawProgress();
-  }
-
-  private getProgressBar(value: number, total: number): string {
-    const width = process.stderr.columns
-      ? Math.min(30, process.stderr.columns - 20)
-      : 30;
-    const filled = Math.round((width * value) / total);
-    return '█'.repeat(filled) + ' '.repeat(width - filled);
-  }
-
-  private drawProgress() {
-    if (!this.initialized || this.progressArea.length === 0) return;
-
-    // Move cursor to progress area
-    const terminalHeight = process.stderr.rows || 24;
-    process.stderr.write(`\x1B[${terminalHeight - this.progressLines};1H`);
-
-    // Draw each line of the progress area
-    for (const line of this.progressArea) {
-      process.stderr.write(line + '\n');
+    // Simple text-based progress reporting
+    if (progress.currentQuery) {
+      if (progress.parentQuery) {
+        this.log(`\n[Depth ${progress.currentDepth}/${progress.totalDepth}] Following up on: "${progress.parentQuery}"`);
+      }
+      this.log(`\n[Query ${progress.completedQueries + 1}/${progress.totalQueries}] Searching: "${progress.currentQuery}"`);
+    }
+    
+    // Print learnings if available
+    if (progress.learnings && progress.learnings.length > 0) {
+      this.log("\n📚 New learnings:");
+      progress.learnings.forEach((learning, i) => {
+        this.log(`  ${i + 1}. ${learning}`);
+      });
+    }
+    
+    // Print follow-up questions if available
+    if (progress.followUpQuestions && progress.followUpQuestions.length > 0) {
+      this.log("\n❓ Follow-up questions:");
+      progress.followUpQuestions.forEach((question, i) => {
+        this.log(`  ${i + 1}. ${question}`);
+      });
+    }
+    
+    // Print sources if available
+    if (progress.sources && progress.sources.length > 0) {
+      this.log("\n🔗 Sources found:");
+      progress.sources.forEach(source => {
+        const reliabilityEmoji = source.reliabilityScore >= 0.8 ? "✅" : 
+                                source.reliabilityScore >= 0.5 ? "⚠️" : "❌";
+        this.log(`  ${reliabilityEmoji} [${source.reliabilityScore.toFixed(2)}] ${source.url} - ${source.domain}`);
+        if (source.title) {
+          this.log(`    Title: ${source.title}`);
+        }
+        if (source.publishDate) {
+          this.log(`    Published: ${source.publishDate}`);
+        }
+      });
     }
   }
 }

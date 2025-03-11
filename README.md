@@ -42,6 +42,109 @@ https://modelcontextprotocol.io/quickstart/server
 - Available as a Model Context Protocol (MCP) tool for AI agents
 - For now MCP version doesn't ask follow up questions
 
+## Optimizations
+
+This fork includes several optimizations to reduce costs while maintaining research quality:
+
+### Cost Reduction Optimizations
+
+1. **Source Reliability Caching**
+   - Added reliability cache to avoid re-evaluating the same domains
+   - Implemented rule-based reliability scoring for common domains (Wikipedia, GitHub, YouTube, Reddit)
+   - Eliminates redundant LLM calls when the same sources appear multiple times
+
+2. **Optimized Content Processing**
+   - Reduced token usage by trimming content length from 25,000 to 15,000 tokens
+   - Added content truncation for long documents (limited to 3,000 chars) to save tokens
+   - Skip empty results to avoid unnecessary LLM calls
+   - More efficient prompt formatting that reduces redundant information
+
+3. **Intelligent Query Generation**
+   - Skip LLM calls for follow-up queries by directly converting research directions to queries
+   - Reduced the number of learnings passed to query generation (only top 10)
+   - Simplified prompt templates to use fewer tokens
+   - Added adaptive query count that reduces breadth when sufficient learnings are found
+   - Used a more compact format for research directions
+
+4. **Selective Deep Research**
+   - Implemented intelligent depth control that only explores promising paths
+   - Added prioritization of verification queries and novel directions
+   - Reduced search breadth when already have sufficient learnings
+   - Early termination for low-value research branches
+
+5. **Report Generation Optimization**
+   - Limited the number of learnings sent to the final report (max 40)
+   - Restricted conflicting claims to only the top 5 most significant
+   - Reduced token limit for learnings from 150k to 100k
+   - Limited the sources section to only the top 30 most relevant sources
+   - Made prompt templates more concise
+
+### Results of Optimizations
+
+These changes significantly reduce costs through:
+- Fewer LLM calls (via caching and selective exploration)
+- Reduced tokens per call (via content truncation and efficient prompting)
+- Focused resource allocation on high-value research paths
+
+Research quality is maintained by intelligently prioritizing:
+- The most reliable sources
+- The most promising research directions
+- The most significant conflicting claims
+- The most recent and relevant content
+
+## Debugging and Prompt Management
+
+This fork adds robust debugging capabilities and centralized prompt management:
+
+### Enhanced Debugging
+
+The system includes a comprehensive debugging module that helps you understand what's happening at each step of the research process:
+
+```bash
+# Add to .env.local to enable debugging
+DEBUG_MODE=true
+DEBUG_LEVEL=3      # 1=ERROR, 2=WARN, 3=INFO, 4=DEBUG, 5=TRACE
+DEBUG_PROMPTS=true    # Log all prompts sent to LLMs
+DEBUG_RESPONSES=true  # Log all responses from LLMs
+DEBUG_PROGRESS=true   # Log progress updates
+DEBUG_SOURCES=true    # Log detailed source information
+```
+
+Debug output includes:
+- Color-coded log levels
+- Timing information for performance analysis
+- Formatted display of prompts and responses
+- Source reliability visualization
+- Research progress tracking
+
+### Centralized Prompt Management
+
+All prompts are now centralized in a single location (`src/prompts/index.ts`), making it easy to:
+
+1. **Understand Prompts**: Each prompt is documented with:
+   - What it does
+   - When it's used
+   - Expected inputs and outputs
+   - Optimization notes
+
+2. **Modify Prompts**: Change any prompt without hunting through the codebase:
+   ```typescript
+   // Example: Modify the Source Reliability Evaluation prompt
+   export const sourceReliabilityPrompt = (domain: string, context: string) => {
+     return `Your custom prompt here...`;
+   };
+   ```
+
+3. **Add New Prompts**: Easily extend the system with new prompt types:
+   ```typescript
+   // Example: Add a custom prompt
+   export const myCustomPrompt = (param1: string, param2: number) => {
+     return `Custom prompt with ${param1} and ${param2}`;
+   };
+   ```
+
+This structure makes it simple to experiment with different prompt strategies and fine-tune the system for specific research needs.
+
 ## How It Works
 
 ```mermaid

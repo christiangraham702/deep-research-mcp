@@ -69,7 +69,8 @@ server.tool(
         prompt: query,
         learnings: result.learnings,
         visitedUrls: result.visitedUrls,
-        sourceMetadata: result.sourceMetadata
+        sourceMetadata: result.sourceMetadata,
+        conflictingClaims: result.conflictingClaims || []
       });
 
       return {

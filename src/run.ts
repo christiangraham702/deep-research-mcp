@@ -113,7 +113,7 @@ ${followUpQuestions.map((q: string, i: number) => `Q: ${q}\nA: ${answers[i]}`).j
     totalLearnings: 0
   };
 
-  const { learnings, visitedUrls, sourceMetadata, weightedLearnings } = await deepResearch({
+  const { learnings, visitedUrls, sourceMetadata, weightedLearnings, conflictingClaims } = await deepResearch({
     query: combinedQuery,
     breadth,
     depth,
@@ -129,7 +129,13 @@ ${followUpQuestions.map((q: string, i: number) => `Q: ${q}\nA: ${answers[i]}`).j
               parent: progress.parentQuery,
               depth: progress.currentDepth,
               learnings: progress.learnings,
-              followUps: progress.followUpQuestions
+              followUps: progress.followUpQuestions,
+              sources: progress.sources?.map(s => ({
+                url: s.url,
+                domain: s.domain,
+                reliability: s.reliabilityScore,
+                publishDate: s.publishDate
+              }))
             }
           }
         });
@@ -140,7 +146,8 @@ ${followUpQuestions.map((q: string, i: number) => `Q: ${q}\nA: ${answers[i]}`).j
           parentQuery: progress.parentQuery,
           depth: progress.currentDepth,
           learnings: progress.learnings || [],
-          followUpQuestions: progress.followUpQuestions || []
+          followUpQuestions: progress.followUpQuestions || [],
+          sources: progress.sources || []
         });
         researchMetrics.totalLearnings += progress.learningsCount;
       }
@@ -187,7 +194,8 @@ ${followUpQuestions.map((q: string, i: number) => `Q: ${q}\nA: ${answers[i]}`).j
     prompt: combinedQuery,
     learnings,
     visitedUrls,
-    sourceMetadata
+    sourceMetadata,
+    conflictingClaims
   });
 
   await fs.writeFile('output.md', report, 'utf-8');
